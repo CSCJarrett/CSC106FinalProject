@@ -472,7 +472,7 @@ var winScreen = function() {
     
 };
 
-//Handeling mouse click for the button object class
+//Handling just the button mouseclick otherwise it won't work.
 mouseClicked = function() {
     btn1.handleMouseClick();
 };
