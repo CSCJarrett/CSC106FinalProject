@@ -1,0 +1,503 @@
+/*Scene Transition Variable*/
+var currentScene = 0;
+   
+/* drawBitmoji function */
+
+var drawBitmoji = function(bitmojiX, bitmojiY, Height) {
+    
+    var drawBitmojiHead = function(bitmojiX, bitmojiY, Height) {
+    var Eyesize =Height/10;
+    var Hairwidth = Height/10;
+    var Hairheight = Height * 3/10;
+    // head 
+    fill(255, 219, 172);
+    ellipse(bitmojiX, bitmojiY + (Height/100*22), Height, Height);
+
+    //eyes
+    fill(0, 213, 255);
+    ellipse(bitmojiX + (Height/100*20), bitmojiY + (Height/100*18), Eyesize, Eyesize); //     right eye
+
+    fill(0, 213, 255);
+    ellipse(bitmojiX - (Height/100*20), bitmojiY + (Height/100*18), Eyesize, Eyesize); //     left eye
+
+    //hair / hat
+    fill(110, 28, 13);
+    rect(bitmojiX - (Height/100*50), bitmojiY, Hairwidth, Hairheight); // left hair
+
+    fill(110, 28, 13);
+    rect(bitmojiX + (Height/100*40), bitmojiY, Hairwidth, Hairheight); // right hair
+
+    fill(110, 28, 13);
+    arc(bitmojiX , bitmojiY, Height, Height * 73/100, -192, 2); // hair
+
+    fill(211, 211, 211);
+    arc(bitmojiX, bitmojiY - (Height/100*12), Height * 115/100, Height * 55/100, -211, 32); // Top part of hat
+
+    fill(169, 169, 169);
+    arc(bitmojiX + 0, bitmojiY - (Height/100*5), Height * 130/100, Height * 33/100, -225, 46); // brim
+
+    // nose and mouth
+
+    fill(255, 179, 179);
+    quad(bitmojiX + (Height/100*25), bitmojiY + (Height/100*50), bitmojiX -(Height/100*25), bitmojiY + (Height/100*50), bitmojiX -(Height/100*10), bitmojiY +(Height/100*60), bitmojiX + (Height/100*7), bitmojiY +(Height/100*60));
+
+    fill(247, 171, 57);
+    triangle(bitmojiX + (Height/100*7), bitmojiY + (Height/100*40) , bitmojiX -(Height/100*9), bitmojiY + (Height/100*40), bitmojiX, bitmojiY + (Height/100*15));
+
+};
+
+
+var drawBitmojiBody = function(bitmojiX, bitmojiY, Height) {
+    // shirt / Arms
+    fill(0, 46, 184);
+    rect(bitmojiX - (Height/100*64), bitmojiY + (Height/100*60), Height * 130/100,         Height * 40/100);
+
+    fill(10, 7, 7);
+    rect(bitmojiX -(Height/100*44), bitmojiY + (Height/100*77), Height * 1/50, Height*23/100); //Arm slit
+
+    fill(10, 7, 7);
+    rect(bitmojiX + (Height/100*45), bitmojiY + (Height/100*77), Height * 2/100,            Height * 23/100); //Arms slit
+
+    //initials
+
+    fill(255, 255, 255);
+    textSize(Height * 25/100);
+    text("JD", bitmojiX - (Height/100*16), bitmojiY + (Height/130*95));
+
+};
+
+drawBitmojiBody(bitmojiX, bitmojiY, Height);
+drawBitmojiHead(bitmojiX, bitmojiY, Height);
+
+};
+
+/* A copy of the Khan Button class */
+
+var Button = function(config) {
+    this.x = config.x || 0;
+    this.y = config.y || 0;
+    this.width = config.width || 150;
+    this.height = config.height || 50;
+    this.label = config.label || "Click";
+    this.onClick = config.onClick || function() {};
+};
+
+Button.prototype.draw = function() {
+    fill(255, 255, 0);
+    rect(this.x, this.y, this.width, this.height, 5);
+    fill(0, 0, 0);
+    textSize(19);
+    textAlign(LEFT, TOP);
+    text(this.label, this.x+10, this.y+this.height/4);
+};
+
+Button.prototype.isMouseInside = function() {
+    return mouseX >= this.x &&
+           mouseX <= (this.x + this.width) &&
+           mouseY >= this.y &&
+           mouseY <= (this.y + this.height);
+};
+
+Button.prototype.handleMouseClick = function() {
+    if (this.isMouseInside()) {
+        this.onClick();
+    }
+};
+
+/*The start button*/
+var btn1 = new Button({
+    x: 128,
+    y: 295,
+    label: "        Start",
+    onClick: function() {
+        currentScene = 1;
+    }
+});
+
+
+/*
+Splash screen and instructions
+*/
+
+var splashScreen = function() {
+    currentScene = 0;
+    textSize(20);
+    background(150, 35, 245);
+    fill(255, 238, 0);
+    text("Jarrett DeFreitas", 5, 12);
+    textSize(30);
+    text("Star Sweeper", 102, 78, 395,300);
+    textSize(20);
+    text("Avoid the stars and clear all the tiles to win!", 6, 140, 395, 300);
+    textSize(15);
+    text("Hint: Double click all the tiles or a Suprise may await", 6, 375);
+    drawBitmoji(200, 207, 75);
+};
+
+
+/* Game screen Function */
+
+var gameScreen = function() {
+    //Current Scene assingment
+    currentScene = 1;
+    
+    //Tile Object that will make up most of the game 
+    var Tile = function(x, y, size, text, R, G, B) {
+    this.x = x;
+    this.y = y;
+    this.size = 24;
+    this.text = text;
+    this.R = R;
+    this.G = G;
+    this.B = B;
+};
+
+    //Tile Draw function this will allow us to draw the tile object
+Tile.prototype.draw = function() {
+    fill(0, 143, 214);
+    rect(this.x, this.y, this.size, this.size);
+    fill(this.R, this.G, this.B);
+    text(this.text, this.x, this.y, 20, 20);
+};
+    //Similar to button object class we use the Tile under mouse to click on tiles
+Tile.prototype.isUnderMouse = function(x, y) {
+    return x >= this.x && x <= this.x + this.size  &&
+        y >= this.y && y <= this.y + this.size;
+};
+
+    //Another tile object which will go on top of the other Tile function.
+var ontopTile = function(x, y, size) {
+    this.x = x;
+    this.y = y;
+    this.size = 24;
+};
+
+
+ontopTile.prototype.draw = function() {
+    fill(123, 0, 255);
+    rect(this.x, this.y, this.size, this.size);
+};
+
+    //Star object class which we will draw on the original Tile object.
+var Star = function(x, y, Choice) {
+  this.x = x;
+  this.y = y;
+  this.size = 20;
+  //Choosing what image to draw
+  this.Choice = Choice;
+};
+
+    //Drawing the Star object
+Star.prototype.draw = function() {
+    //Drawing the Star
+    if (this.Choice === 0){
+        image(getImage("space/star"), this.x , this.y , this.size + 5 , this.size + 5);
+    }
+    //Drawing Numbers Using Images and having the tile color change depending on the number
+    else if (this.Choice === 1){
+        fill(34, 255, 0);
+        rect(this.x, this.y, 24, 24);
+        image(getImage("space/1"), this.x + 5, this.y +3, this.size, this.size);
+    }
+    //Number 2
+    else if (this.Choice === 2) {
+        fill(242, 255, 0);
+        rect(this.x, this.y, 24, 24);
+        image(getImage("space/2"), this.x + 5, this.y + 3, this.size, this.size);
+    }
+    //Number 3
+    else if (this.Choice === 3) {
+        fill(255, 196, 0);
+        rect(this.x, this.y, 24, 24);
+        image(getImage("space/3"), this.x + 5, this.y + 3, this.size, this.size);
+    }
+    //Number 4
+    else if (this.Choice === 4) {
+        fill(255, 51, 0);
+        rect(this.x, this.y, 24, 24);
+        image(getImage("space/4"), this.x + 5, this.y +3, this.size, this.size);
+    }
+};
+    
+    //Being able to click on the Star array
+Star.prototype.isUnderMouse = function(x, y) {
+    return x >= this.x && x <= this.x + this.size  &&
+        y >= this.y && y <= this.y + this.size;
+};
+
+
+
+
+// Global config
+var NUM_COLS = 15;
+var NUM_ROWS = 14;
+//The amount of Stars on the field
+var NUM_BOMBS = round(random(16, 20));
+//Counting the amount of stars that are actually on the field
+var ONFIELD = 0;
+
+var selected = [];
+for (var i = 0; i < (NUM_COLS * NUM_ROWS) / 2; i++) {
+}
+
+// Create the tiles and Stars
+// The Arrays that will hold all the values of tiles and stars
+// Not all of them are necessary anymore I used them for testing
+var tiles = [];
+var ontoptiles = [];
+var tilesvaluesX = [];
+var tilesvaluesY = [];
+var stars = [];
+var starsvaluesX = [];
+var starsvaluesY = [];
+var numberONES = [];
+var numberTWOS = [];
+var numberTHREES = [];
+var numberFOURS = [];
+
+//Creating the grid of tiles similar to what we did in other projects
+for (var i = 0; i < NUM_COLS; i++) {
+    for (var j = 0; j < NUM_ROWS; j++) {
+        var tileX = i * 25 + 12;
+        var tileY = j * 25 + 20;
+        var SET = round(random (1, 5)); // 1 in 5 chance for a star to spawn
+        
+    /////////////////////MAKING Sure star tiles are place correctly /////////////////////
+        
+        /*if the SET is equal to one it will create a bomb between the boxes that are 1 left
+        or 1 right of the outside of the edges*/ 
+        if (SET === 1 && NUM_BOMBS > 0 && i < 14 && i > 1 && j < 13 && j > 1) {
+            NUM_BOMBS--;
+            //Adding Star Objects into the array
+            starsvaluesX.push(tileX);
+            starsvaluesY.push(tileY);
+            stars.push(new Star(tileX ,tileY, 0 ));
+            
+    ///////////////////////NUMBER ONE TILES /////////////////////////////////////////////
+    
+    //Pushing all the numbers next to the stars into their own arrays so we can call on it
+    //There was almost definitely a better way of doing this but it works!
+    
+            ///Pushing number Ones to the Right
+            numberONES.push(new Star(tileX + 25, tileY, 1));
+            ///Pushing number Ones to the left
+            numberONES.push(new Star(tileX - 25, tileY, 1));
+            ///Pushing Number Ones Down
+            numberONES.push(new Star(tileX, tileY - 25, 1));
+            ///Pushing Number Ones Up
+            numberONES.push(new Star(tileX, tileY + 25, 1));
+            ///Pushing Number Ones UPRight
+            numberONES.push(new Star(tileX + 25, tileY + 25, 1));
+            ///Pushing Number Ones DownRight
+            numberONES.push (new Star(tileX + 25, tileY - 25, 1));
+            ///Pushing Number Ones UPLeft
+            numberONES.push (new Star(tileX - 25, tileY + 25, 1));
+            ///Pushing Number Ones DownLeft
+            numberONES.push (new Star(tileX - 25, tileY - 25, 1));
+            
+    ///////////////////////////NUMBER TWO TILES //////////////////////////////////////////
+    
+            ///Pushing number Twos to the Right
+            numberTWOS.push(new Star(tileX + 25, tileY, 2));
+            ///Pushing number Twos to the left
+            numberTWOS.push(new Star(tileX - 25, tileY, 2));
+            ///Pushing Number Twos Down
+            numberTWOS.push(new Star(tileX, tileY - 25, 2));
+            ///Pushing Number Twos Up
+            numberTWOS.push(new Star(tileX, tileY + 25, 2));
+            ///Pushing Number Twos UPRight
+            numberTWOS.push(new Star(tileX + 25, tileY + 25, 2));
+            ///Pushing Number Twos DownRight
+            numberTWOS.push (new Star(tileX + 25, tileY - 25, 2));
+            ///Pushing Number Twos UPLeft
+            numberTWOS.push (new Star(tileX - 25, tileY + 25, 2));
+            ///Pushing Number Twos DownLeft
+            numberTWOS.push (new Star(tileX - 25, tileY - 25, 2));
+            
+    /////////////////////////NUMBER THREE TILES ///////////////////////////////////////////
+    
+             ///Pushing number Threes to the Right
+            numberTHREES.push(new Star(tileX + 25, tileY, 3));
+            ///Pushing number Threes to the left
+            numberTHREES.push(new Star(tileX - 25, tileY, 3));
+            ///Pushing Number Threes Down
+            numberTHREES.push(new Star(tileX, tileY - 25, 3));
+            ///Pushing Number Threes Up
+            numberTHREES.push(new Star(tileX, tileY + 25, 3));
+            ///Pushing Number Threes UPRight
+            numberTHREES.push(new Star(tileX + 25, tileY + 25, 3));
+            ///Pushing Number Threes DownRight
+            numberTHREES.push (new Star(tileX + 25, tileY - 25, 3));
+            ///Pushing Number Threes UPLeft
+            numberTHREES.push (new Star(tileX - 25, tileY + 25, 3));
+            ///Pushing Number Threes DownLeft
+            numberTHREES.push (new Star(tileX - 25, tileY - 25, 3));
+            
+    /////////////////////////NUMBER FOUR TILES ////////////////////////////////////////////
+    
+            ///Pushing number Fours to the Right
+            numberFOURS.push(new Star(tileX + 25, tileY, 4));
+            ///Pushing number Fours to the left
+            numberFOURS.push(new Star(tileX - 25, tileY, 4));
+            ///Pushing Number Fours Down
+            numberFOURS.push(new Star(tileX, tileY - 25, 4));
+            ///Pushing Number Fours Up
+            numberFOURS.push(new Star(tileX, tileY + 25, 4));
+            ///Pushing Number Fours UPRight
+            numberFOURS.push(new Star(tileX + 25, tileY + 25, 4));
+            ///Pushing Number Fours DownRight
+            numberFOURS.push (new Star(tileX + 25, tileY - 25, 4));
+            ///Pushing Number Fours UPLeft
+            numberFOURS.push (new Star(tileX - 25, tileY + 25, 4));
+            ///Pushing Number Fours DownLeft
+            numberFOURS.push (new Star(tileX - 25, tileY - 25, 4));
+        }
+    
+    //////////////////////////////////////////////////////////////////////////////
+    
+    //Adding the tiles into their arrays so we can draw them later.
+        tiles.push(new Tile(tileX, tileY));
+        ontoptiles.push(new ontopTile(tileX, tileY, 24));
+        tilesvaluesX.push(tileX);
+        tilesvaluesY.push(tileY);
+        
+    }
+}
+
+background(255, 255, 255);
+
+//First drawing the tiles that would look to be on top of the others.
+//Using the length of the array to see how many we need to print
+
+ for (var i = 0; i < tiles.length; i++){
+    ontoptiles[i].draw();
+    }
+
+
+    
+/*Figuring out how to implement clicking on different tiles
+based off of the memory game code*/
+
+mouseClicked = function() {
+//Determines how many tiles are left
+//Number counter is used for the amount of ones that are drawn on top of eachother
+var numberCounter = 0;
+var TilesUncovered = 0;
+///////////////////////////////////
+    for(var i = 0; i < tiles.length; i++){
+        //Using the memory game as a base to check where your mouse is                              //And to draw that specific tile
+        var tile = tiles[i];
+        if (tile.isUnderMouse(mouseX, mouseY)){
+            tiles[i].draw();
+            //Drawing the numbers now with a different array
+            for (var l = 0; l < numberONES.length; l++){
+                var numberONE = numberONES[l];
+                if (numberONE.isUnderMouse(mouseX, mouseY)){
+                    numberONE.draw();
+                    //Checking how many Ones there are and then drawing a new number on top
+                    numberCounter++;
+                    //If the counter is two draw a two
+                    if (numberCounter === 2){
+                        var numberTWO = numberTWOS[l];
+                        numberTWO.draw();
+                    }
+                    //If three draw a three
+                        if (numberCounter === 3) {
+                            var numberTHREE = numberTHREES[l];
+                            numberTHREE.draw();
+                        }
+                    //If Four draw a four
+                            if (numberCounter === 4) {
+                                var numberFOUR = numberFOURS[l];
+                                numberFOUR.draw();
+                            }
+                }
+            }
+            //If there a star draw a star then send to the game over screen
+                for (var k = 0; k < tiles.length; k++) {
+                    var star = stars[k];
+                    if (star.isUnderMouse(mouseX, mouseY)){
+                        stars[k].draw();
+                        currentScene = 2; 
+                    }
+                } 
+        }
+    }
+    //Adding to the tiles uncovered 
+    //if it's equal to the amount of tiles minus the amount of stars send to win screen
+    TilesUncovered++;
+    if (TilesUncovered >= (tiles.length - stars.length)){
+        currentScene = 3;
+    }
+};
+
+
+};
+
+/* Game over screen  Design*/
+
+var endScreen = function() {
+    currentScene = 2;
+    textSize(20);
+    background(44, 18, 66);
+    fill(255, 247, 0);
+    text("GAME OVER", 140, 145);
+    text("Press the Restart Button", 95, 180);
+  
+    var designx = 15;
+        for(var p = 0; p < 5; p++){
+        image(getImage("cute/Star"), designx, -20, 80, 100);
+        image(getImage("cute/Star"), designx, 300, 80, 100);
+        designx = designx + 75;
+        
+    }
+};
+
+/* Win screen Design */
+
+var winScreen = function() {
+    currentScene = 3;
+    textSize(20);
+    background(158, 51, 240);
+    fill(242, 255, 0);
+    text("You mapped the entire star system congrats!", 3, 150);
+    drawBitmoji(200, 200, 85);
+    var designx = 15;
+    for(var p = 0; p < 5; p++){
+        image(getImage("cute/Star"), designx, -20, 80, 100);
+        image(getImage("cute/Star"), designx, 300, 80, 100);
+        designx = designx + 75;
+        
+    }
+    
+};
+
+//Handeling mouse click for the button object class
+mouseClicked = function() {
+    btn1.handleMouseClick();
+};
+
+//Option variable is just checking if the game has been drawn once
+//If it has do not draw it again to not have it draw over itself
+var Option = 0;
+
+//Draw function that is drawing all of the different scenes and buttons
+draw = function() {
+if (currentScene === 0) {
+    splashScreen();
+    btn1.draw();
+}
+ if (currentScene === 1) {
+    if (Option === 0){
+        Option = 1;
+        gameScreen();
+    }
+}
+else if (currentScene === 2){
+    endScreen();
+}
+else if (currentScene === 3){
+    winScreen();
+}
+
+};
